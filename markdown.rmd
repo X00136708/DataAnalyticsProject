@@ -1,0 +1,753 @@
+---
+title: "Data Analytics Project"
+authors: "Nathan Brunel (X00139550), Ronan Doran (X00136708), John De Guzman (X00137820)"
+date: "27 October 2018"
+output: word_document
+---
+
+Introduction
+
+In this project we(Nathan Brunel, Ronan Doran, John De Guzman) intend to analyse and extract appropriate information to either support or disprove our listed hypotheses. The statistics we selected are variables surrounding crime in North Carolina. We chose this data as we can extrapolate interesting points and correlations from it.  It is our goal to clearly convey which variables relate to crime, we anticipate accomplishing this by grouping data sets, visualizing results, and analysing them collectively.
+
+
+
+```{r, echo = FALSE}
+setwd("C:/Users/doran/Documents/R/RProject1")##import data
+data <- read.csv("Crime.csv")
+```
+#Nathan Brunel (X00139550)
+
+Hypothesis one.
+Which of the non economic factors most closely relates to the amount of police per person in each state.<br><br>
+To accomplish this I created a vector made up of the correlation values up to 10.
+
+(Some graphs have been compiled incorrectly, they work perfectly when running in R)
+
+```{r, echo = FALSE}
+linkpoliceAndAll <- vector("double", 10)#creating a vector of doubles size 10
+
+#insering values
+linkpoliceAndAll[1] <- cor(data$polpc, data$taxpc)
+linkpoliceAndAll[2] <- cor(data$polpc, data$density)
+linkpoliceAndAll[3] <- cor(data$polpc, data$mix)
+linkpoliceAndAll[4] <- cor(data$polpc, data$crmrte)
+linkpoliceAndAll[5] <- cor(data$polpc, data$prbarr)
+linkpoliceAndAll[6] <- cor(data$polpc, data$prbconv)
+linkpoliceAndAll[7] <- cor(data$polpc, data$prbpris)
+linkpoliceAndAll[8] <- cor(data$polpc, data$avgsen)
+linkpoliceAndAll[9] <- cor(data$polpc, data$pctmin)
+linkpoliceAndAll[10] <- cor(data$polpc, data$pctymle)
+
+
+```
+
+```{r, echo = FALSE}
+#printing the first plot
+plot(linkpoliceAndAll, ylab = "Correlation", main = "Correlation between police per capita and several variables")
+abline(h = c(-0.02246, 0.25860), col = "red")
+abline(h = c(0.12320), col = "blue")
+legend(2, 0.4, legend = c("Mean", "1st and 3rd quartile"), col = c("blue", "red"))
+```
+
+
+The above plot illustrates the correlation between the police population and the index. The index position stands for a selection of seperate values.<br><br>
+1 Is the average Tax paid.<br>
+2 Is the average population density.<br>
+3 Is the amount of face to face crime.<br>
+4 Is the overall crime rate.<br>
+5 Is the probability of arrest.<br>
+6 Is the probability of convictio after arrest.<br>
+7 Is the probability of prison sentence.<br>
+8 Is the average prison sentence.<br>
+9 Is the percentage minority.<br>
+10 Is the percentage of young males.<br> 
+
+From this plot we can gather that index number 1,2,7,8,9, and 10 all have below average correlation with police. Doing the plot again without this values will allow us to more closer study the variables with strong positive correlations.
+
+
+
+
+```{r, echo = FALSE}
+#printing the second plot of strongest links
+ImprovedLinkPolice <- vector("double", 4)
+
+ImprovedLinkPolice[1] <- cor(data$polpc, data$mix) 
+ImprovedLinkPolice[2] <- cor(data$polpc, data$crmrte)
+ImprovedLinkPolice[3] <- cor(data$polpc, data$prbarr)
+ImprovedLinkPolice[4] <- cor(data$polpc, data$prbconv)
+```
+
+
+```{r, echo= FALSE}
+
+plot(ImprovedLinkPolice, ylab = "Correlation", main = "Correlation between police per capita and strongest correlations")
+```
+
+
+The above plot is the same but adjusted to only inlcude the strongest correlations. This plot clearly reinforces that there is a strong link between Face to face crime, crime rate, arrests and the strongest correlation is convictions. 
+
+
+In summary of hypothesis one I have shown which of the selected values most closely correlates with police population in the state. Given that police are almost entirely paid for by taxes I had expected there to be a stronger link between the areas that paid the most and the police population. Instead the correlation between tax and police was one of the weakest measured being only 0.1. The strongest four where listed above (not in order) which were all causes or results of police. Unfortunately this test uncovered nothing unexpected. 
+<br><br>
+Hypothesis two.
+The states with the most crime correlates with those that have the most police and determining if getting the averages for each state has a significant effect on accuracy.<br><br>
+To do this I a vector storing the average crime for each county through the period of data (1981-1987) available and then doing the same for police population.
+After these were done I checked the correlation between between the correlation of averages though the period and the original values
+
+```{r, echo = FALSE}
+i = 1
+crimeByCounty <- vector("double", length(unique(data$county)))
+for (counties in unique(data$county)) {
+    crimeByCounty[i] <- (mean(data$crmrte[data$county == counties]))
+    i = i + 1
+}
+
+i = 1
+policeByCounty <- vector("double", length(unique(data$county))) 
+for (counties in unique(data$county)) {
+    policeByCounty[i] = (mean(data$polpc[data$county == counties]))
+    i = i + 1
+}
+```
+
+```{r, echo = FALSE}
+print(cor(policeByCounty, crimeByCounty))
+print("This value is the average of each county over the period compared to the average police presence")
+print(cor(data$polpc, data$crmrte))
+print("This value is the unedited comparison measuring the link")
+
+print("The difference is ")
+cor(data$polpc, data$crmrte) - cor(policeByCounty, crimeByCounty)
+```
+
+In relation to unedited comparison the error 35.37% off.<br>
+
+In summary the difference is substantial from adjusting the values to averages over the same period and data. This occured on a very small set if the data encompassed more years or more locations the accuracy would have exponentially decreased.
+
+
+
+<br>
+Hypothesis three.
+Which of the industries average weekly income was most affected throughout the period regardless of positve or negative effect.
+
+
+
+```{r, echo = FALSE}
+wconAverage <- vector("double", 7) #prepare a container
+for (years in unique(data$year)) {#iterate through the years
+    
+    wconAverage[(years - 80)] <- (mean(data$wcon[data$year == years])) #average weekly construction pay over the years stored.
+}
+plot(wconAverage, xlab = "year in the 80's", ylab = "average income for construction")# displaying the plot
+```
+This plot illustrates the increase in weekly income for people working in construction.
+
+```{r, echo = FALSE}
+wtucAverage <- vector("double", 7) 
+for (years in unique(data$year)) {
+  
+    wtucAverage[(years - 80)] <- (mean(data$wtuc[data$year == years]))
+}
+plot(wtucAverage, xlab = "year in the 80's", ylab = "average income for trns, util, commun")
+```
+This plot illustrates the income for people working in transportation, utilities and communication. Notice the unusual spike in 83. The max recorded weekly income is $ 3041.96 and the minimum was $139.49.
+The summary below displays information on the weekly income for this year I believe there may have been an error in recording this data as these values are significant outliers.
+```{r, echo = FALSE}
+print(summary(data$wtuc[data$year==83]))
+```
+
+```{r, echo = FALSE}
+wtrdAverage <- vector("double", 7) 
+for (years in unique(data$year)) {
+    
+    wtrdAverage[(years - 80)] <- (mean(data$wtrd[data$year == years]))
+}
+plot(wtrdAverage, xlab = "year in the 80's", ylab = "average income for sales and retail")
+```
+This plot illustrates the income for people in retail and sales. Similarily to the previous plot there is a spike occuring in 1984. THe max is once again an outlier as demonstrated below so it is safe to consider this a result of human error.
+
+```{r, echo = FALSE}
+summary(data$wtrd[data$year == 84])
+```
+
+```{r, echo = FALSE}
+wfirAverage <- vector("double", 7) 
+for (years in unique(data$year)) {
+
+    wfirAverage[(years - 80)] <- (mean(data$wfir[data$year == years]))
+}
+plot(wfirAverage, xlab = "year in the 80's", ylab = "average income for insurance and real estate")
+```
+The above plot illustrates the increase in income for people employeed in insurance and real estate.
+
+```{r, echo = FALSE}
+wserAverage <- vector("double", 7) 
+for (years in unique(data$year)) {
+    
+    wserAverage[(years - 80)] <- (mean(data$wser[data$year == years]))
+}
+plot(wserAverage, xlab = "year in the 80's", ylab = "average income for service industry")
+```
+The above plot illustrates the increase in income for people employeed in the service industry.
+
+```{r, echo = FALSE}
+wmfgAverage <- vector("double", 7) 
+for (years in unique(data$year)) {
+    
+    wmfgAverage[(years - 80)] <- (mean(data$wmfg[data$year == years]))
+}
+plot(wmfgAverage, xlab = "year in the 80's", ylab = "average income for manufacturing")
+```
+The above plot illustrates the increase in income for people employeed in insurance and real estate.
+
+```{r, echo = FALSE}
+wfedAverage <- vector("double", 7)
+for (years in unique(data$year)) {
+    
+    wfedAverage[(years - 80)] <- (mean(data$wfed[data$year == years]))
+}
+plot(wfedAverage, xlab = "year in the 80's", ylab = "average income for federal employees")
+```
+The above plot illustrates the increase in income for people employeed in insurance and real estate.
+
+```{r, echo = FALSE}
+wstaAverage <- vector("double", 7) 
+for (years in unique(data$year)) {
+    
+    wstaAverage[(years - 80)] <- (mean(data$wsta[data$year == years]))
+}
+plot(wstaAverage, xlab = "year in the 80's", ylab = "average income for state employees")
+```
+The above plot illustrates the increase in income for people employeed in insurance and real estate.
+
+```{r, echo = FALSE}
+wlocAverage <- vector("double", 7) 
+for (years in unique(data$year)) {
+    
+    wlocAverage[(years - 80)] <- (mean(data$wloc[data$year == years]))
+}
+plot(wlocAverage, xlab = "year in the 80's", ylab = "average income for government employees")
+```
+The above plot illustrates the increase in income for people employeed in insurance and real estate.<br>
+
+These plots successfully confirm the rapid growth in income for the people of North Carolina between 1981 and 1987 but which of them was most effected can be found by finding the range and taking the smallest average from the largest average and the result will be the overall increase. Since I have outlined my suspicion for human error in two of the values and will do them two ways to try and eliminate the errors.   
+```{r, echo = FALSE}
+print(max(data$wcon) - min(data$wcon))
+cat("This is the increase in construction")
+print(max(data$wtuc) - min(data$wtuc))
+print("This is the increase in trns, util, commun")
+print(max(data$wtrd) - min(data$wtrd)) 
+print("This is the increase in whole sales and retail trade")
+print(max(data$wfir) - min(data$wfir))
+print("This is the increase in  finance, insurance and real estate")
+print(max(data$wser) - min(data$wser))
+print("This is the increase in  service industry")
+print(max(data$wmfg) - min(data$wmfg))
+print("This is the increase in manufacturing")
+print(max(data$wfed) - min(data$wfed))
+print("This is the increase in federal employees")
+print(max(data$wsta) - min(data$wsta))
+print("This is the increase in state employees")
+print(max(data$wloc) - min(data$wloc))
+print("This is the increase in local governments employees")
+
+```
+By this method $3013.1 is the largest incerease in wages. However if we instead take the first value from the last and assume that it was human error we get the same result for all of them except the construction and "trns, util, commun".
+Instead we get 
+```{r, echo = FALSE}
+print(wconAverage[7] - wconAverage[1])
+print(" for constrcution and")
+print(wtucAverage[7] - wtucAverage[1])
+print(" for transport untilities and communication")
+```
+In summary the industry most affected is manufactoring with over $540 increase over the period.
+
+
+
+Hypothesis four.<br>
+Counties with below average income will have higher crime rates. To test this I will sort the counties by whether they have a crime rate greater or less than the overall average. After splitting the counties into appropriate data frames I then compare the average crime rates. 
+
+``` {r, echo = FALSE}
+total <- 0
+counter <- 0
+for (i in 1:length(data$year)) { # this will find the average income over all the years by adding all the seperate wages values for each county and adding them all up and dividing by the number of values.
+    total = total + (data$wcon[i] + data$wtuc[i] + data$wtrd[i] + data$wfir[i] + data$wser[i] + data$wmfg[i] + data$wfed[i] + data$wsta[i] + data$wloc[i])
+    counter = counter + 9
+}
+averageWage = total / counter
+cat("The average income of dataset: $", averageWage) # this will print the data out. 
+
+
+
+crimeRateInHI <- data.frame()# this initializes the frames and resets values
+crimeRateInLI <- data.frame()
+county <- unique(data$county)
+total <- 0.0
+i <- 0
+
+
+for (i in 1:length(county)) { #  this sorts the data into two frames depending on the average income determined by the wages. 
+    total = (data$wcon[i] + data$wtuc[i] + data$wtrd[i] + data$wfir[i] + data$wser[i] + data$wmfg[i] + data$wfed[i] + data$wsta[i] + data$wloc[i]) / 9
+    total
+    if (averageWage < total) {
+        crimeRateInHI <- rbind(crimeRateInHI, data.frame("county" = i, "mean" = total, "CrimeRate" = data$crmrte[i])) # if high income
+    } else {
+        crimeRateInLI <- rbind(crimeRateInLI, data.frame("county" = i, "mean" = total, "CrimeRate" = data$crmrte[i])) # if low income
+    }
+
+}
+
+cat("The average crime rate for high income counties is " , mean(crimeRateInHI$CrimeRate))#prints results.
+cat("The average crime rate for low income counties is ", mean(crimeRateInLI$CrimeRate))
+
+```
+
+
+
+In summary the results clearly show the hypothesis is incorrect. The lower income counties have slightly less crime on average. This could be due to the rural areas having a lower crimerate and a lower average income. This seperate 
+
+
+
+#Ronan Doran (X00136708)
+
+
+``` {r echo=FALSE}
+data <- read.csv("Crime.csv")
+```
+
+#Hypothesis: Young males are responsible for more violent crimes.
+
+
+
+``` {r echo=FALSE}
+plot(data$mix, data$pctymle, xlab="Face-To-Face Crime Percentage", ylab="Percentage of young males", col="blue", lwd=1, pch=16)
+```
+
+
+In this comparison, I compared the percentage of young males (Age 0-18 approximately). This graph shows that; the lower the amount of young males, the more direct the crimes are towards others. This could be down to the males forming gangs to pursue crime.
+
+As of the making of this data set, Jacksonville in 1981 existed the highest 'Young Males to Population' percentage at an extraordinary 27.435%. 
+
+ ``` {r echo=FALSE}
+ max(data$pctymle)
+```
+
+When I tried to find the max percentage of the crimes to find which ones were face-to-face, I found a bug in the dataset. For an unknown reason, the value was 400% which is Impossible. I had to assume this was a mistake and I made a script to find the max of a new dataset which had all the values of the previous one except there was a constraint for < 100%. I then found out that at one point in the time frame of this dataset, the violence of crime reached 66.6% [1], meaning that of all crimes committed in that county in that year, 2/3rds were confrontational/direct crimes. This happened in the county identifier '185' (John in my group also found evidence in 1985 of county 185 having the highest conviction rate, this leads us to think that this is the most violent county) which is known as Warrenton in 1981 [2]. (Using the link provided in references for County Name: County ID). 
+
+[1]
+``` {r echo=FALSE}
+nums <- c(data$mix)
+count <- 0
+newNums <- c()
+for(i in 1:length(nums)){
+  if(nums[i] <= 1){
+    newNums[count] <- nums[i]
+    count = count + 1
+  }
+}
+max(newNums)
+
+```
+
+[2]
+``` {r echo=FALSE}
+counties <- c(data$county)
+
+for(i in 1:length(nums)){
+  if(nums[i] == 0.6666667){
+    print(counties[i])
+  }
+}
+```
+
+At the time that this massive crime statistic abrupted, the percentage of young males was at 8.59%. 
+
+``` {r echo=FALSE}
+year <- c(data$year)
+counties <- c(data$county)
+males <- c(data$pctymle)
+
+for(i in 1:length(nums)){
+  if(nums[i] == 0.6666667){
+    print(year[i])
+    print(counties[i])
+    print(males[i])
+  }
+}
+
+```
+
+This is below the overall average 8.89%. 
+
+``` {r echo=FALSE}
+  mean(data$pctymle)
+  
+```
+
+Another piece of evidence I found against the hypothesis was that the correlation of both data columns is -0.04259. This is a weak negative correlation, meaning that when one of the variables increases, the other variable is affected negatively. (If X rises, Y shrinks). This doesn't happen much but it does happen ever so slightly.
+
+
+#Hypothesis: Young males receive longer prison sentences than the rest of the population.
+The total average sentencing is 8.9 days across all counties from 1981 to 1987.
+
+``` {r echo=FALSE}
+mean(data$avgsen)
+```
+
+``` {r echo=FALSE}
+hist(data$avgsen, main="Average days of sentencing", xlab="Sentenced days", col="orange")
+```
+
+As this histogram and the mean both identify, the majority of the sentencing time last just over a week with the odd exception lasting up to 20 days (4 instances).
+
+``` {r echo=FALSE}
+sentenceTime <- c(data$avgsen)
+count <- 0
+for(i in 1:length(sentenceTime)){
+  if(sentenceTime[i] > 20){
+    count = count + 1;
+  }
+}
+count
+
+```
+
+This means that 4 counties have an average sentencing time greater than 20 days. These counties and time frames are:
+
+``` {r echo=FALSE}
+males <- c(data$pctymle)
+entenceTime <- c(data$avgsen)
+county <- c(data$county)
+year <- c(data$year)
+
+count <- 0
+for (i in 1:length(sentenceTime)) {
+    if (sentenceTime[i] > 20) {
+        print(paste0("Average sentencing time in county: ", county[i], ", 19", year[i],
+                 " is: ", sentenceTime[i], " days.", "Percentage of young males in this year: ", males[i]))
+    }
+}
+```
+
+From this query, I noticed that county '115' also known as Marshall (https://en.wikipedia.org/wiki/List_of_counties_in_North_Carolina ), has an average sentencing higher than 20 days in 2 of the 8 years measured. I compared these results to the percentage of young males in these eras and found little correlation. The percentages are:
+In 1981 - 8.5%
+In 1987 - 7.2%
+
+I say that there is little correlation because young males can still cause some of the crime, but crime is not directly composed of young people. They are both independent. 
+ 
+``` {r echo=FALSE}
+cor(data$avgsen, data$pctymle)
+```
+ 
+The above command results in an answer of 0.058. This answer is much closer to 0 than it is to 1. Meaning that the correlation is less relevant. This is however proof that young people do commit some crime.
+This clarifies that my hypothesis is not true.
+
+
+#Hypothesis: Population will increase at a higher rate over the years
+
+To start this, I decided to pick a number above the mean of the dataset. I picked the number '7' and compared the density values to this. I wanted to find a small portion of values in which I could calculate the population for. I found an external link, provided in the references, to give me the population of the county Charlotte from the years 1981 - 1987.
+
+``` {r echo=FALSE}
+  density <- c(data$density)
+count <- 0
+for(i in 1: length(density)){
+  if(density[i] > 7){
+    count = count + 1
+    print(paste0(county[i], "    19", year[i]))
+  }
+}
+count
+```
+
+From here, I can calculate the population of the county and see if it rises over the time period.
+``` {r echo=FALSE}
+year1981 <- 320391
+year1982 <- 328150
+year1983 <- 334782
+year1984 <- 338107
+year1985 <- 350342
+year1986 <- 368212
+year1987 <- 388995
+counter <- 1
+num <- 0
+population <- c(year1981, year1982, year1983, year1984, year1985, year1986, year1987)
+
+for(i in 1:length(population)){
+  difference <- population[i+1] - population[i]
+  print(paste0(difference, " between period ",counter))
+  counter = counter+1
+  num <- num + difference
+  print(num)
+}
+
+```
+This Box and Whisker diagram shows the exponential increase of the population over the data set duration.
+
+
+``` {r echo=FALSE}
+boxplot(year1981,year1982,year1983,year1984,year1985,year1986,year1987, xlab= c("1981  1982  1983  1984  1985  1986  1987"))
+
+```
+
+The "num" variable above was used to total the differences. This information is showing the increase of population between each of the years. At 1987, the difference over the course of the previous 7 years is an increase of 68,604 people. 
+
+I got the difference between the population for each year and reduced each data set until I eventually got 1 number (see the below picture). The final piece of data was the closest matched variable for all of the years. I used this final variable to scale my way back up through the chart which gives a new value on the very right for the year 1988. This value matched the current growth over the years as my result ended up with an increase of 27 thousand people in one year. From this link,(http://ww.charmeck.org/planning/ResearchGIS/HistoricalData/Charlotte_Population_and_Area_since_1980.pdf ), you can see that from 1987 to 1999, the population barely changed (couple of hundred people over the space of 2 years), whereas in 2000 - 2001, the increase was 36k in one year. This shows how unpredictable the population can be. This proves that statistics is pure estimation based on maths and not real life scenarios.) 
+
+
+![This is a picture i made as a demonstration for what i'm trying to say above](Tree.png)
+
+The ending value I got was an increase of 1.0712 of the current population for that year. Seeing that the population in 1987 was 388,955 people, to get the estimated population for 1988, I multiplied 388,995 * 1.0712 and this got me the result. I made a R script [1] to test the population in 30 years from then (2017's population) and got an ending result of 805,686 people. The actual population of Charlotte in 2017 was 859,035. Although it isn't perfect, I do believe that this is an accurate rate of increase based on the fact we only have 7 years of prior information to work from. 
+
+[1]
+``` {r echo=FALSE}
+startValue <- 388995 #Population in 1987
+for(i in 30){
+  newVal = startValue * 1.0712
+  startValue = startValue + newVal
+}
+startValue #Population in 2017
+```
+
+#Hypothesis: Is there a correlation between Density and living in Cities?
+ 
+
+``` {r echo=FALSE}
+
+plot(data$density, data$smsa, main="Comparison of density in Cities vs Rural areas", xlab = "Amount of people per km�", ylab ="1 = Rural areas, 2= City areas", col="red")
+arrows(x0=1, y0=1.6, x1=2.4, y1=2, col = "green")
+text(x=2.3,y=1.6, "Density for all city areas")
+arrows(x0=1, y0=1.4, x1=0.1, y1=1, col="blue")
+text(x=2.3,y=1.4, "Density for all rural areas")
+abline(h = 1.5, col="black")
+```
+
+
+
+``` {r echo=FALSE} 
+
+count <- 0
+cityStatus <- c(data$smsa)
+densityCity <- 0
+densityRural <- 0
+counter <- 0
+maxCity <- 0
+maxRural <- 0
+for (i in 1:length(cityStatus)) {
+    if (cityStatus[i] == 2) { #2 means city, 1 means rural
+        densityCity = densityCity + data$density[i]
+        count = count + 1
+        if(data$density[i] > maxCity){
+            maxCity = data$density[i]
+        }
+    }
+
+}
+for(i in 1:length(cityStatus)){
+    if(cityStatus[i] == 1){
+        densityRural = densityRural + data$density[i]
+        counter = counter + 1
+        if(data$density[i] > maxRural){
+            maxRural = data$density[i]
+        }
+    }
+}
+
+cat("Average people per 100m� in CITY: " ,densityCity / count)
+cat("\n")
+cat("Highest amount of people per 100m� in CITY: ", maxCity)
+cat("\n")
+cat("\n")
+cat("Average people per 100m� in RURAL: ", densityRural / counter)
+cat("\n")
+cat("Highest amount of people per 100m� in RURAL: ", maxRural)
+
+
+```
+
+The maximum density in the Rural areas is still less than the average of the density in City areas. This is a definite assist towards proving the hypothesis that there are more people per km� in cities rather than in rural areas.
+
+I then went on to test the correlation between the density and the smsa value. The excel speadsheet said it was a categorical column as the options were "no" or "yes" but when i tried to test against this, it said that the values were "1" and "2" for the values respectively.
+I made the code below to make a new collection, assigning the same values to a new collection which i could then get the correlation for (because both values are now numerical).
+``` {r echo=FALSE} 
+
+counterYes <- 0
+counterNo <- 0
+status <- c()
+cityStatus <- c(data$smsa)
+for (i in 1:length(cityStatus)) {
+  if (cityStatus[i] == 2) {
+    status[i] = 2
+    counterYes = counterYes + 1
+  } else {
+    status[i] = 1
+    counterNo = counterNo + 1
+  }
+}
+
+cat("Correlation for Density vs Location:" ,cor(data$density, status))
+```
+
+This is a strong positive correlation, meaning that the higher the density of the location, the higher the chance  you are living in a city.
+
+Pie chart showing the ratio between Rural:City
+
+``` {r echo=FALSE}
+
+cat("(",counterNo, ",",counterYes,")")
+```
+
+``` {r echo=FALSE}
+pie(c(counterYes, counterNo),c("Rural", "City"), col=c("green", "yellow"))
+```
+
+
+#John De Guzman (X00137820)
+
+Firstly I extracted specific datas from the dataset to a data frame in order to test my hypotheses.
+``` {r echo = FALSE}
+
+
+crime.data <- data.frame(
+  years = c(unique(data$year)),
+  countyID = c(data$county),
+  popDens = c(data$density),
+  smsa = c(data$smsa),
+  
+  policePer_Capita = c(data$polpc),
+  crimeConvict_rate = c(data$prbconv),
+
+  WklyWage_stateEmps = c(data$wsta),
+  wklyWage_feds = c(data$wfed),
+  wklyWage_localGovEmps = c(data$wloc),
+  wklyWage_manufacturing = c(data$wmfg),
+  wklyWage_servIndust = c(data$wser),
+  wklyWage_finance_Insurance_Estate = c(data$wfir),
+  wklyWage_wholeSales_Trade = c(data$wtrd),
+  wklyWage_trns_util_commun = c(data$wtuc),
+  wklyWage_construction = c(data$wcon),
+
+  stringsAsFactors = FALSE
+)
+
+crime.data$avgWage <- (crime.data$WklyWage_stateEmps + crime.data$WklyWage_stateEmps +
+  crime.data$wklyWage_localGovEmps + crime.data$wklyWage_manufacturing +
+  crime.data$wklyWage_servIndust + crime.data$wklyWage_finance_Insurance_Estate +
+  crime.data$wklyWage_wholeSales_Trade + crime.data$wklyWage_trns_util_commun +
+  crime.data$wklyWage_construction) / 9
+```
+### Hypothesis 1: Crime conviction rates increases throughout the 1980s.
+
+
+Here we will look into the probability of crime convictions in the 80s. We will try to find which out of the year sin the 80s.
+
+
+First things first lets look into the data set we will be comparing. Here we have the years and mean of crime conviction rates for the whole 7 years. 
+If we display the two datas without modifying the rows then we would be displaying over 600 records of data. That is inefficient. So now that we displayed the data. We can now visualize it plotting it in a graph.
+
+```{r echo = FALSE}
+years <- c(unique(crime.data$years))
+piedata <- data.frame()
+for(i in years){
+  row <- data.frame("year" =  i,"mean" = mean(crime.data$crimeConvict_rate[crime.data$years == i]))
+  piedata <- rbind(piedata, row)
+}
+piedata
+```
+Here we can see the data in graph form below. It appears to spike on the year 85. This could be an outlier as shown in the graph and when displaying the summary of the crime conviction rates. The third quartile of the crime conviction rates is significantly less than the max, the percentage error of this is 5821%. This indicates that the max is an outlier. 
+```{r}
+summary(crime.data$crimeConvict_rate)
+```
+
+```{r echo = FALSE}
+plot(piedata, type = "o", main = "The Conviction rates throughout the 80s")
+arrows(x0 = 83.5, y0 = 1, x1 = 85, y1 = 1.12 , col = "red")
+text(x = 83.2, y = 1, labels = "Outlier")
+```
+Although there was a significant spike in 1985. The graph shows the crime rate decreases rather than increasing. This proves my hypothesis wrong.
+
+
+### Hypothesis 2: The lower the density population the higher the wages. 
+
+
+In this second hypothesis I intend to demonstrate that the relationship between the density and the wages is a strong negative association. I created a data frame that stores wage and population density. I then plotted it as a scatterplot as shown below. 
+```{r echo = FALSE}
+wagePopGrowth <- data.frame(wage = crime.data$avgWage, dens = crime.data$popDens)
+
+plot(wagePopGrowth, main = "The correlation of density population and wages")
+```
+
+The diagram above shows that the lower the population desnity the lower the wages are. This indicates a strong positves correlation between these variables. In summary this supports my hypotheis. 
+
+
+### Hypothesis 3: There is a higher chance of crime in the city than the countryside. 
+
+In this final hypothesis I will illustrate that the there is a higher chance of crime in the the city. In the data I extracted the crime rate and the SMSA, Standard Metropolitan Statistical Area. I then calculated the mean of the crime rate that equals to false if it is rural. Then the same for city letting it equal to true.
+
+```{r echo=FALSE}
+city <- mean(data$crmrte[crime.data$smsa == 2])
+rural <- mean(data$crmrte[crime.data$smsa == 1])
+pie(c(city, rural), c("City", "Rural"), col = c("Yellow", "Black"))
+```
+
+```{r echo = FALSE}
+cat(city, "city ")
+cat(rural, "rural")
+```
+The pie chart shows that there is significantly higher crime rate in the city rather than in rural areas. Also showing the mean above, the mean of the city is higher than the rural area. This proves the hypothesis that there is higher chance of crime happening in the city. 
+
+
+
+
+
+We did a summary of all our investigations to clarify the results.
+ 
+#Hypotheses;
+
+**1:  Which of the non-economic factors most closely relates to the amount of police per person in each state.**
+	
+	  Convictions most closely reflects the size of the police population.
+	  
+**2:  The states with the most crime correlates with those that have the most police and determining if getting the averages for each state has a significant effect on accuracy.**
+	
+	  The percentage error is over 35%. This indicates that using averages greatly reduces the accuracy even over a relatively small selection of data.
+	  
+**3:  Which of the industries average weekly income was most affected throughout the period regardless of positive or negative effect.**
+	
+	  Manufactoring, Was most affected throughout the selected timeframe.
+	  
+**4:  Counties with below average income will have higher crime rates.**
+	
+	  This is incorrect the regions with below average income had a lower average crime rate than regions with higher income.
+	  
+**5:  Young males are responsible for more violent crimes.**
+	
+	  I found a negative correlation where my hypothesis indicates it should be positive. I found the county that had the highest amount of crime, the % of young males was below the average % so this proves that there is       
+	  not much linking these 2 variables together. 
+	  
+**6:  Young males receive longer prison sentences than the rest of the population.**
+	
+	  Similar to the last hypothesis, I found the correlation between both the percentage of young males and the average prison sentencing for that era. This resulted in little correlation which meant that young males did      
+	  commit some of the crimes, but crimes are not mainly composed of young males.
+	  
+	  
+**7:  Population will increase at a higher rate over the years.**
+  
+    For this query, i did a case study on the highest populated county in North Carolina (Marshall). I made a script to calculate the expected growth based on the previous 7 years and i used this information to formulate          what the population in 2017 would be. I believe that my result was quite accurate based on the fact i didn't have much previous data to work with.
+    
+    
+**8:  Cities are more densely populated than rural areas.**
+  
+    There was a strong positive correlation of .807 between these variables. This means that the higher the density, the higher the chance the location is a city. 
+    
+    
+**9:  Crime conviction rates increase throughout the 1980s.**
+    
+    Crime conviction rate decreases throughout the 1980s due to the low rates in the last years.
+  
+**10:  There is negative correlation between wages and population density.**
+
+    The lower the population density, the higher the wages get for each individual. 
+    
+**11:  There is a higher chance of crime in the city than in rural areas.**
+
+    There is a higher chance crime rate in the city than in rural areas as shown in the piechart.
